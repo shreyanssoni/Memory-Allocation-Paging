@@ -21,7 +21,7 @@
 #define MEMORY_SZ 2048
 #define FRAME_SZ 8
 #define NUM_FRAMES 256
-#define PROCESS_COUNT 35
+#define PROCESS_COUNT 10
 #define TABLE_SIZE 10
 
 typedef struct PCB {

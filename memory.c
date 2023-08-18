@@ -7,6 +7,8 @@
 #include "header.h"
 // #include "memory.h"
 
+pthread_mutex_t frame_table_mutex = PTHREAD_MUTEX_INITIALIZER;
+
 typedef struct {
     int pageNo;
     ProcessAttri pcb;
@@ -38,6 +40,7 @@ void print_frametable(){
 }
 
 int allocate_frame(int pid, int state, int pageNo){
+    pthread_mutex_lock(&frame_table_mutex);
     for(int i= 0; i < NUM_FRAMES; i++){
         if(frame_table[i].pcb.pid == -1){
             frame_table[i].pcb.pid = pid;
@@ -49,17 +52,18 @@ int allocate_frame(int pid, int state, int pageNo){
             return i;
         }
     }
+    pthread_mutex_unlock(&frame_table_mutex);
     return -1; //no frame empty 
 }
 
 void deallocate_frame(int frameNo){
+    pthread_mutex_lock(&frame_table_mutex);
     printf("Deallocating Frame %d, Process %d\n", frameNo, frame_table[frameNo].pcb.pid);
     frame_table[frameNo].pcb.pid = -1;
     frame_table[frameNo].pcb.state = -1;
     frame_table[frameNo].pageNo = -1;
+    pthread_mutex_unlock(&frame_table_mutex);
 }
-
-
 
 
 void *frame_deallocation(void *arg){
@@ -75,6 +79,8 @@ void *frame_deallocation(void *arg){
         printf("Checking for terminated Processes. \n");
         int allTerminated = 1;
         usleep(500);
+
+        pthread_mutex_lock(&frame_table_mutex);
         for (int i = 0; i < NUM_FRAMES; i++) {
                 // printf("//InsideDealloc Frame %d - Process %d state %d\n", i,  
                         // processes[frame_table[i].pcb.pid].pid, 
@@ -88,6 +94,8 @@ void *frame_deallocation(void *arg){
                     }
             }
         } 
+        pthread_mutex_unlock(&frame_table_mutex);
+
         // pthread_mutex_unlock(&state_mutex); 
         // printf("FRAME DEALLOC UN-LOCKED MUTEX\n");
         if(allTerminated) {
@@ -95,6 +103,8 @@ void *frame_deallocation(void *arg){
             break;
         }
     }
+
+    pthread_mutex_unlock(&frame_table_mutex);
 
     return NULL; 
 }

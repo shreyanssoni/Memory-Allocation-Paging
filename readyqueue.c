@@ -13,7 +13,7 @@ extern pthread_cond_t deallocation_cond;
 PCB *ready_queue_head = NULL; 
 
 void enqueue_ready_queue(PCB *process){
-    pthread_mutex_lock(&ready_queue_mutex);
+    // pthread_mutex_lock(&ready_queue_mutex);
     // printf("ENQUEUE TAKES THE LOCK for PROCESS %d\n", process->pid);
     
     process->next = NULL; 
@@ -36,7 +36,7 @@ void enqueue_ready_queue(PCB *process){
         process->prev = current; 
 
     }
-    pthread_mutex_unlock(&ready_queue_mutex);
+    // pthread_mutex_unlock(&ready_queue_mutex);
     // printf("ENQUEUE RELEASES THE LOCK %d\n", process->pid);
 }
 
@@ -44,11 +44,11 @@ void enqueue_ready_queue(PCB *process){
 PCB *dequeue_ready_queue(ProcessPageTable tables[]) {
     int frameAvailable = -1;
     // //printf("before dequeue mutex\n"); 
-    pthread_mutex_lock(&ready_queue_mutex);
+    // pthread_mutex_lock(&ready_queue_mutex);
     // printf("DEQUEUE TAKES THE LOCK. \n"); 
 
     if (ready_queue_head == NULL) {
-        pthread_mutex_unlock(&ready_queue_mutex);
+        // pthread_mutex_unlock(&ready_queue_mutex);
         // printf("Ready queue is empty.\n");
         return NULL; // Queue is empty
     }
@@ -64,7 +64,7 @@ PCB *dequeue_ready_queue(ProcessPageTable tables[]) {
             //printf("Process %d, Page %d Mapped to Frame %d\n", process->pid, i, frameNumber);
         } else {
             frameAvailable = -1;
-            pthread_mutex_unlock(&ready_queue_mutex);
+            // pthread_mutex_unlock(&ready_queue_mutex);
             printf("DEQUEUE RELEASES LOCK DUE TO ERROR MAPPING\n");
             return NULL; 
         }
@@ -80,39 +80,37 @@ PCB *dequeue_ready_queue(ProcessPageTable tables[]) {
     process->next = NULL;
     process->prev = NULL; 
     
-    pthread_mutex_unlock(&ready_queue_mutex);
+    // pthread_mutex_unlock(&ready_queue_mutex);
     return process;
 }
 
 void* scheduler(void *arg){
-    ThreadArgs *threadArgs = (ThreadArgs*) arg;
-    PCB *processes = threadArgs->processes; 
+    // ThreadArgs *threadArgs = (ThreadArgs*) arg;
+    // PCB *processes = threadArgs->processes; 
     
-    while(1) {
-
-        // pthread_mutex_lock(&ready_queue_mutex);
-
-        for(int i = 0; i < PROCESS_COUNT; i++){
-            PCB *process = &processes[i];
-            usleep(200);
-            if(process->state == 1){
-                // pthread_mutex_unlock(&ready_queue_mutex);
-                enqueue_ready_queue(process); 
-            }
-        }
+    // while(1) {
+    //     // pthread_mutex_lock(&ready_queue_mutex);
+    //     for(int i = 0; i < PROCESS_COUNT; i++){
+    //         PCB *process = &processes[i];
+    //         usleep(200);
+    //         if(process->state == 1){
+    //             // pthread_mutex_unlock(&ready_queue_mutex);
+    //             enqueue_ready_queue(process); 
+    //         }
+    //     }
         // pthread_mutex_unlock(&ready_queue_mutex);
 
-        PCB *dequeued_process = dequeue_ready_queue(threadArgs->page_tables);
-        if(dequeued_process == NULL ){
-            usleep(4000);
-            pthread_cond_signal(&deallocation_cond);
-        } else {
-            dequeued_process->state = 0; 
-            printf("Scheduler dequeued process %d from ready queue with state %d.\n", dequeued_process->pid, dequeued_process->state);
-            pthread_cond_signal(&deallocation_cond);
-            usleep(500);
-        }
-        usleep(100);
-    }
+        // PCB *dequeued_process = dequeue_ready_queue(threadArgs->page_tables);
+        // if(dequeued_process == NULL ){
+        //     usleep(4000);
+        //     pthread_cond_signal(&deallocation_cond);
+        // } else {
+        //     dequeued_process->state = 0; 
+        //     printf("Scheduler dequeued process %d from ready queue with state %d.\n", dequeued_process->pid, dequeued_process->state);
+        //     pthread_cond_signal(&deallocation_cond);
+        //     usleep(500);
+        // }
+    //     usleep(500);
+    // }
     // return NULL; 
 }
